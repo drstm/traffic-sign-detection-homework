@@ -13,7 +13,7 @@ parser.add_argument('--data', type=str, default='data', metavar='D',
                     help="folder where data is located. train_data.zip and test_data.zip need to be found in the folder")
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=100, metavar='N',
+parser.add_argument('--epochs', type=int, default=30, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
                     help='learning rate (default: 0.01)')
@@ -35,14 +35,17 @@ else:
 	print("Using CPU")
 
 ### Data Initialization and Loading
-from data import initialize_data, data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_translate # data.py in the same folder
+from data import initialize_data, data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_jitter_brightness, data_jitter_saturation, data_shear, data_degrees # data.py in the same folder
 initialize_data(args.data) # extracts the zip files, makes a validation set
 
 train_loader = torch.utils.data.DataLoader(torch.utils.data.ConcatDataset([datasets.ImageFolder(args.data + '/train_images',
    transform=data_transforms),
    datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_hue),
-   datasets.ImageFolder(args.data + '/train_images', transform=data_translate),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_brightness),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_saturation),
    datasets.ImageFolder(args.data + '/train_images', transform=data_grayscale),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_shear),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_degrees),
    datasets.ImageFolder(args.data + '/train_images', transform=data_rotate)]), 
    batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=use_gpu)
 val_loader = torch.utils.data.DataLoader(
