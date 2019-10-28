@@ -1,5 +1,6 @@
 *~
 data
+dataset
 *.pyc
 *.pth
 *.csv
