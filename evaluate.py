@@ -27,7 +27,7 @@ model = Net()
 model.load_state_dict(state_dict)
 model.eval()
 
-from data import data_transforms, data_jitter_hue, data_grayscale, data_rotate, data_degrees, data_jitter_brightness, data_jitter_saturation, data_shear
+from data import data_transforms, data_jitter_hue, data_grayscale, data_rotate, data_degrees, data_jitter_brightness, data_jitter_saturation, data_shear, data_jitter_contrast
 
 test_dir = args.data + '/test_images'
 
@@ -37,7 +37,7 @@ def pil_loader(path):
         with Image.open(f) as img:
             return img.convert('RGB')
 
-transforms = [data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_degrees, data_jitter_brightness, data_jitter_saturation, data_shear]
+transforms = [data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_degrees, data_jitter_brightness, data_jitter_saturation, data_shear, data_jitter_contrast]
 output_file = open(args.outfile, "w")
 output_file.write("Filename,ClassId\n")
 for f in tqdm(os.listdir(test_dir)):

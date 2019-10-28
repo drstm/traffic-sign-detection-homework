@@ -35,7 +35,7 @@ else:
 	print("Using CPU")
 
 ### Data Initialization and Loading
-from data import initialize_data, data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_jitter_brightness, data_jitter_saturation, data_shear, data_degrees # data.py in the same folder
+from data import initialize_data, data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_jitter_brightness, data_jitter_saturation, data_shear, data_degrees, data_jitter_contrast # data.py in the same folder
 initialize_data(args.data) # extracts the zip files, makes a validation set
 
 train_loader = torch.utils.data.DataLoader(torch.utils.data.ConcatDataset([datasets.ImageFolder(args.data + '/train_images',
@@ -43,11 +43,12 @@ train_loader = torch.utils.data.DataLoader(torch.utils.data.ConcatDataset([datas
    datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_hue),
    datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_brightness),
    datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_saturation),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_contrast),
    datasets.ImageFolder(args.data + '/train_images', transform=data_grayscale),
    datasets.ImageFolder(args.data + '/train_images', transform=data_shear),
    datasets.ImageFolder(args.data + '/train_images', transform=data_degrees),
    datasets.ImageFolder(args.data + '/train_images', transform=data_rotate)]), 
-   batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=use_gpu)
+   batch_size=args.batch_size, shuffle=True, num_workers=6, pin_memory=use_gpu)
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/val_images',
                          transform=data_transforms),

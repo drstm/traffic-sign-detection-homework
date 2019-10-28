@@ -30,6 +30,14 @@ data_jitter_brightness = transforms.Compose([
     transforms.Normalize((0.3337, 0.3064, 0.3171), ( 0.2672, 0.2564, 0.2629))
 ])
 
+# Resize, normalize and jitter image contrast
+data_jitter_contrast = transforms.Compose([
+	transforms.Resize((32, 32)),
+    transforms.ColorJitter(contrast=5),
+    transforms.ToTensor(),
+    transforms.Normalize((0.3337, 0.3064, 0.3171), ( 0.2672, 0.2564, 0.2629))
+])
+
 # Resize, normalize and jitter image saturation
 data_jitter_saturation = transforms.Compose([
 	transforms.Resize((32, 32)),
