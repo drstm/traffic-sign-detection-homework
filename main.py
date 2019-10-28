@@ -15,7 +15,7 @@ parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 64)')
 parser.add_argument('--epochs', type=int, default=100, metavar='N',
                     help='number of epochs to train (default: 10)')
-parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
                     help='SGD momentum (default: 0.5)')
@@ -35,13 +35,16 @@ else:
 	print("Using CPU")
 
 ### Data Initialization and Loading
-from data import initialize_data, data_transforms # data.py in the same folder
+from data import initialize_data, data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_translate # data.py in the same folder
 initialize_data(args.data) # extracts the zip files, makes a validation set
 
-train_loader = torch.utils.data.DataLoader(
-    datasets.ImageFolder(args.data + '/train_images',
-                         transform=data_transforms),
-    batch_size=args.batch_size, shuffle=True, num_workers=6, pin_memory=use_gpu)
+train_loader = torch.utils.data.DataLoader(torch.utils.data.ConcatDataset([datasets.ImageFolder(args.data + '/train_images',
+   transform=data_transforms),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_jitter_hue),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_translate),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_grayscale),
+   datasets.ImageFolder(args.data + '/train_images', transform=data_rotate)]), 
+   batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=use_gpu)
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/val_images',
                          transform=data_transforms),
