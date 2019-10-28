@@ -27,7 +27,7 @@ model = Net()
 model.load_state_dict(state_dict)
 model.eval()
 
-from data import data_transforms
+from data import data_transforms, data_jitter_hue, data_grayscale, data_rotate, data_translate
 
 test_dir = args.data + '/test_images'
 
@@ -37,19 +37,21 @@ def pil_loader(path):
         with Image.open(f) as img:
             return img.convert('RGB')
 
-
+transforms = [data_transforms, data_grayscale, data_jitter_hue, data_rotate, data_translate]
 output_file = open(args.outfile, "w")
 output_file.write("Filename,ClassId\n")
 for f in tqdm(os.listdir(test_dir)):
     if 'ppm' in f:
-        data = data_transforms(pil_loader(test_dir + '/' + f))
-        data = data.view(1, data.size(0), data.size(1), data.size(2))
-        data = Variable(data, volatile=True)
-        output = model(data)
-        pred = output.data.max(1, keepdim=True)[1]
-
-        file_id = f[0:5]
-        output_file.write("%s,%d\n" % (file_id, pred))
+        output = torch.zeros([1, 43], dtype=torch.float32)
+        with torch.no_grad():
+            for i in range(0,len(transforms)):
+                data = transforms[i](pil_loader(test_dir + '/' + f))
+                data = data.view(1, data.size(0), data.size(1), data.size(2))
+                data = Variable(data, volatile=True)
+                output = model(data)
+            pred = output.data.max(1, keepdim=True)[1]
+            file_id = f[0:5]
+            output_file.write("%s,%d\n" % (file_id, pred))
 
 output_file.close()
 

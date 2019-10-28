@@ -13,9 +13,9 @@ parser.add_argument('--data', type=str, default='data', metavar='D',
                     help="folder where data is located. train_data.zip and test_data.zip need to be found in the folder")
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=10, metavar='N',
+parser.add_argument('--epochs', type=int, default=100, metavar='N',
                     help='number of epochs to train (default: 10)')
-parser.add_argument('--lr', type=float, default=0.01, metavar='LR',
+parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
                     help='learning rate (default: 0.01)')
 parser.add_argument('--momentum', type=float, default=0.5, metavar='M',
                     help='SGD momentum (default: 0.5)')
@@ -27,6 +27,13 @@ args = parser.parse_args()
 
 torch.manual_seed(args.seed)
 
+if torch.cuda.is_available():		
+    use_gpu = True		
+    print("Using GPU")		
+else:		
+	use_gpu = False		
+	print("Using CPU")
+
 ### Data Initialization and Loading
 from data import initialize_data, data_transforms # data.py in the same folder
 initialize_data(args.data) # extracts the zip files, makes a validation set
@@ -34,16 +41,23 @@ initialize_data(args.data) # extracts the zip files, makes a validation set
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/train_images',
                          transform=data_transforms),
-    batch_size=args.batch_size, shuffle=True, num_workers=1)
+    batch_size=args.batch_size, shuffle=True, num_workers=6, pin_memory=use_gpu)
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/val_images',
                          transform=data_transforms),
-    batch_size=args.batch_size, shuffle=False, num_workers=1)
+    batch_size=args.batch_size, shuffle=False, num_workers=6, pin_memory=use_gpu)
 
 ### Neural Network and Optimizer
 # We define neural net in model.py so that it can be reused by the evaluate.py script
 from model import Net
 model = Net()
+
+if use_gpu:
+    model.cuda()
+
+FloatTensor = torch.cuda.FloatTensor if use_gpu else torch.FloatTensor
+LongTensor = torch.cuda.LongTensor if use_gpu else torch.LongTensor
+ByteTensor = torch.cuda.ByteTensor if use_gpu else torch.ByteTensor
 
 optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
 
@@ -51,6 +65,9 @@ def train(epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = Variable(data), Variable(target)
+        if use_gpu:
+            data = data.cuda()
+            target = target.cuda()
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
@@ -67,6 +84,9 @@ def validation():
     correct = 0
     for data, target in val_loader:
         data, target = Variable(data, volatile=True), Variable(target)
+        if use_gpu:
+            data = data.cuda()
+            target = target.cuda()
         output = model(data)
         validation_loss += F.nll_loss(output, target, size_average=False).item() # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1] # get the index of the max log-probability
