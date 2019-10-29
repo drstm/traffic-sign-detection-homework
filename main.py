@@ -7,6 +7,7 @@ import torch.optim as optim
 import numpy as np
 from torchvision import datasets, transforms
 from torch.autograd import Variable
+from matplotlib import pyplot as plt
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch GTSRB example')
@@ -14,7 +15,7 @@ parser.add_argument('--data', type=str, default='data', metavar='D',
                     help="folder where data is located. train_data.zip and test_data.zip need to be found in the folder")
 parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                     help='input batch size for training (default: 64)')
-parser.add_argument('--epochs', type=int, default=40, metavar='N',
+parser.add_argument('--epochs', type=int, default=25, metavar='N',
                     help='number of epochs to train (default: 10)')
 parser.add_argument('--lr', type=float, default=0.0001, metavar='LR',
                     help='learning rate (default: 0.01)')
@@ -25,6 +26,8 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
+
+validation_loss_arr = []
 
 torch.manual_seed(args.seed)
 
@@ -103,7 +106,10 @@ def validation():
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     validation_loss /= len(val_loader.dataset)
-    scheduler.step(np.around(validation_loss,2))
+    validation_loss_arr.append(validation_loss)
+    plt.figure(30)
+    plt.plot(validation_loss_arr)
+    plt.save("loss.png")
     print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
