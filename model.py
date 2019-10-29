@@ -7,8 +7,8 @@ nclasses = 43 # GTSRB as 43 classes
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 100, kernel_size=5)
-        self.bn1 = nn.BatchNorm2d(100)
+        self.conv1 = nn.Conv2d(3, 200, kernel_size=5)
+        self.bn1 = nn.BatchNorm2d(200)
         self.conv2 = nn.Conv2d(100, 150, kernel_size=3)
         self.bn2 = nn.BatchNorm2d(150)
         self.conv3 = nn.Conv2d(150, 250, kernel_size=3)
