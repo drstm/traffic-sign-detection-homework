@@ -6,6 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.autograd import Variable
+from matplotlib import pyplot as plt
 
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch GTSRB example')
@@ -24,6 +25,8 @@ parser.add_argument('--seed', type=int, default=1, metavar='S',
 parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                     help='how many batches to wait before logging training status')
 args = parser.parse_args()
+
+validation_loss_arr = []
 
 torch.manual_seed(args.seed)
 
@@ -47,7 +50,7 @@ train_loader = torch.utils.data.DataLoader(torch.utils.data.ConcatDataset([datas
    datasets.ImageFolder(args.data + '/train_images', transform=data_shear),
    datasets.ImageFolder(args.data + '/train_images', transform=data_degrees),
    datasets.ImageFolder(args.data + '/train_images', transform=data_rotate)]), 
-   batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=use_gpu)
+   batch_size=args.batch_size, shuffle=True, num_workers=6, pin_memory=use_gpu)
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/val_images',
                          transform=data_transforms),
@@ -99,6 +102,10 @@ def validation():
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     validation_loss /= len(val_loader.dataset)
+    validation_loss_arr.append(validation_loss)
+    plt.figure(30)
+    plt.plot(validation_loss_arr)
+    plt.save("loss.png")
     print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
