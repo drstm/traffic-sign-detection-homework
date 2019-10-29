@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import numpy as np
 from torchvision import datasets, transforms
 from torch.autograd import Variable
 
@@ -66,7 +67,9 @@ FloatTensor = torch.cuda.FloatTensor if use_gpu else torch.FloatTensor
 LongTensor = torch.cuda.LongTensor if use_gpu else torch.LongTensor
 ByteTensor = torch.cuda.ByteTensor if use_gpu else torch.ByteTensor
 
-optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+# optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+optimizer = optim.Adam(filter(lambda p: p.requires_grad,model.parameters()),lr=args.lr)
+scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min',patience=5,factor=0.5,verbose=True)
 
 def train(epoch):
     model.train()
@@ -100,6 +103,7 @@ def validation():
         correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
     validation_loss /= len(val_loader.dataset)
+    scheduler.step(np.around(validation_loss,2))
     print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
