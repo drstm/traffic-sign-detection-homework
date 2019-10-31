@@ -109,7 +109,7 @@ def validation():
     validation_loss_arr.append(validation_loss)
     plt.figure(30)
     plt.plot(validation_loss_arr)
-    plt.save("loss.png")
+    plt.savefig("loss.png")
     print('\nValidation set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         validation_loss, correct, len(val_loader.dataset),
         100. * correct / len(val_loader.dataset)))
